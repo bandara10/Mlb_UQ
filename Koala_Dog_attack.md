@@ -1,362 +1,183 @@
+STATISTICAL MODEL STRUCTURE
 
-# Statistical Analysis
+Step 1. Define the outcome
 
-## Observation Model
+For each koala:
 
-For each koala mortality record i:
+Yi = 1 if death was due to dog attack
 
-Yi = 1 if death was due to the target cause
+Yi = 0 if death was due to another cause
 
-Yi = 0 otherwise
-
-Assume:
-
-Yi ~ Bernoulli(pi_i)
-
-where:
-
-pi_i = P(Yi = 1)
+(or vehicle collision versus all other causes)
 
 --------------------------------------------------
 
-## Linear Predictor
+Step 2. Specify the probability model
 
-eta_i = beta_0
-      + beta_1*x_1i
-      + beta_2*x_2i
-      + ...
-      + beta_p*x_pi
-      + W(s_i)
+Assume each observation follows a Bernoulli distribution.
 
-where:
+This means each koala death can have only two outcomes:
 
-beta_0 = intercept
+- Case
+- Control
 
-beta_j = regression coefficients
+Mathematically:
 
-x_ij = explanatory variables
+Yi ~ Bernoulli(pi)
 
-W(s_i) = spatial random effect
+where pi is the probability that death was due to the target cause.
 
 --------------------------------------------------
 
-## Link Function
+Step 3. Relate probability to explanatory variables
 
-logit(pi_i)
+The probability is not assumed to be constant.
 
-= log[ pi_i / (1 - pi_i) ]
+Instead:
 
-= eta_i
+Probability depends on
 
-Equivalent form:
+- Dog density
+- Road density
+- Human population density
+- Elevation
+- Other risk factors
 
-pi_i = exp(eta_i) / (1 + exp(eta_i))
+using:
 
---------------------------------------------------
+logit(pi)
 
-## Bernoulli Likelihood
-
-L(beta,W)
-
-= Product over i
-
-[pi_i^(y_i)] * [(1-pi_i)^(1-y_i)]
-
---------------------------------------------------
-
-## Spatial Process
-
-W(s)
-
-~ Gaussian Process(0, C(theta))
-
-where:
-
-C(theta) = spatial covariance function
-
-theta = spatial parameters
-
---------------------------------------------------
-
-## Joint Likelihood
-
-p(Y,W | beta, theta)
-
-= p(Y | W, beta)
-
-× p(W | theta)
-
---------------------------------------------------
-
-## Prior Distributions
-
-beta ~ p(beta)
-
-theta ~ p(theta)
-
---------------------------------------------------
-
-## Posterior Distribution
-
-p(beta,W,theta | Y)
-
-proportional to
-
-p(Y | W,beta)
-
-× p(W | theta)
-
-× p(beta)
-
-× p(theta)
-
---------------------------------------------------
-
-## Computational Inference
-
-Posterior inference performed using:
-
-- INLA
-- SPDE
-
---------------------------------------------------
-
-MODEL HIERARCHY
-
-Observed Data (Y)
-        |
-        v
- Bernoulli Model
-        |
-        v
-    Likelihood
-        |
-        v
- Logistic Model
-        |
-        v
- Spatial Random Effect
-        |
-        v
- Joint Likelihood
-        |
-        v
-      Priors
-        |
-        v
-    Posterior
-        |
-        v
-    INLA-SPDE
-        |
-        v
- Parameter Estimates
-
-
-
-# Statistical Analysis
-
-## 1. Observation Model
-
-For each koala mortality record \(i\), define:
-
-\[
-Y_i =
-\begin{cases}
-1, & \text{if death was due to the target cause} \\
-0, & \text{otherwise}
-\end{cases}
-\]
-
-Assume:
-
-\[
-Y_i \sim \text{Bernoulli}(\pi_i)
-\]
-
-where:
-
-\[
-\pi_i = P(Y_i = 1)
-\]
-
-is the probability that mortality was due to the target cause.
-
----
-
-## 2. Linear Predictor
-
-The probability of cause-specific mortality was modelled using a logistic regression:
-
-\[
-\eta_i
 =
-\beta_0
+intercept
 +
-\sum_{j=1}^{p}\beta_j x_{ij}
+effects of explanatory variables
 +
-W(s_i)
-\]
+spatial random effect
 
-where:
+--------------------------------------------------
 
-- \(\eta_i\) = linear predictor
-- \(\beta_0\) = intercept
-- \(\beta_j\) = regression coefficients
-- \(x_{ij}\) = explanatory variables
-- \(W(s_i)\) = spatial random effect at location \(s_i\)
+Step 4. Construct the likelihood function
 
----
+Given the Bernoulli probability model,
 
-## 3. Link Function
+the likelihood for all observations is:
 
-The linear predictor was linked to the mortality probability using the logit link:
+Likelihood
 
-\[
-\text{logit}(\pi_i)
 =
-\log
-\left(
-\frac{\pi_i}
-{1-\pi_i}
-\right)
+Probability of observing all recorded deaths
+
+given the model parameters.
+
+This is called the Bernoulli likelihood.
+
+The likelihood tells us:
+
+"How well do the current parameter values explain the observed mortality data?"
+
+--------------------------------------------------
+
+Step 5. Add spatial dependence
+
+Nearby koala deaths may be more similar than distant deaths.
+
+To account for this:
+
+A spatial Gaussian random field W(s) is added.
+
+This captures unexplained spatial clustering.
+
+Examples:
+
+- Local habitat characteristics
+- Unmeasured road hazards
+- Local dog activity
+
+--------------------------------------------------
+
+Step 6. Construct the joint likelihood
+
+The model now contains two probabilistic components:
+
+1. Bernoulli mortality process
+
+2. Spatial Gaussian process
+
+These are combined into a single joint likelihood.
+
+Joint likelihood
+
 =
-\eta_i
-\]
+Mortality likelihood
 
-or equivalently:
+×
 
-\[
-\pi_i
-=
-\frac{\exp(\eta_i)}
-{1+\exp(\eta_i)}
-\]
+Spatial process likelihood
 
----
+--------------------------------------------------
 
-## 4. Bernoulli Likelihood
+Step 7. Add prior distributions
 
-Conditional on the spatial effect:
+Because the analysis is Bayesian,
 
-\[
-L(\boldsymbol{\beta},W)
-=
-\prod_{i=1}^{n}
-\pi_i^{y_i}
-(1-\pi_i)^{1-y_i}
-\]
+prior distributions are assigned to:
 
-This likelihood measures how well the regression coefficients and spatial effects explain the observed mortality outcomes.
+- Regression coefficients
+- Spatial parameters
 
----
+These priors represent knowledge before seeing the data.
 
-## 5. Spatial Process Model
+--------------------------------------------------
 
-Spatial dependence was modelled using a Gaussian random field:
+Step 8. Obtain the posterior distribution
 
-\[
-W(s)
-\sim
-GP(0,C(\theta))
-\]
+Bayes' theorem combines:
 
-where:
+Likelihood
 
-- \(GP\) = Gaussian Process
-- \(C(\theta)\) = covariance function
-- \(\theta\) = spatial hyperparameters
+×
 
----
+Prior information
 
-## 6. Joint Likelihood
+to produce:
 
-Combining the observation model and spatial process:
+Posterior distribution
 
-\[
-p(\mathbf{Y},W|\boldsymbol{\beta},\theta)
-=
-p(\mathbf{Y}|W,\boldsymbol{\beta})
-\times
-p(W|\theta)
-\]
+The posterior contains everything known about the parameters after observing the data.
 
-This represents the joint likelihood of the observed mortality data and the latent spatial field.
+--------------------------------------------------
 
----
+Step 9. Estimate parameters
 
-## 7. Prior Distributions
+The posterior distribution is approximated using:
 
-Bayesian prior distributions were assigned:
+INLA-SPDE
 
-\[
-\boldsymbol{\beta}
-\sim
-p(\boldsymbol{\beta})
-\]
+This avoids computationally intensive MCMC simulation.
 
-\[
-\theta
-\sim
-p(\theta)
-\]
+--------------------------------------------------
 
-where:
+COMPLETE MODEL JOURNEY
 
-- \(\boldsymbol{\beta}\) = regression parameters
-- \(\theta\) = spatial covariance parameters
-
----
-
-## 8. Posterior Distribution
-
-The posterior distribution was obtained using Bayes' theorem:
-
-\[
-p(\boldsymbol{\beta},W,\theta|\mathbf{Y})
-\propto
-p(\mathbf{Y}|W,\boldsymbol{\beta})
-\times
-p(W|\theta)
-\times
-p(\boldsymbol{\beta})
-\times
-p(\theta)
-\]
-
----
-
-## 9. Computational Inference
-
-Posterior inference was performed using:
-
-- Integrated Nested Laplace Approximation (INLA)
-- Stochastic Partial Differential Equation (SPDE) representation of the Gaussian random field
-
-which provides an efficient approximation to the posterior distribution without requiring Markov chain Monte Carlo (MCMC) sampling.
-
----
-
-# Model Hierarchy
-
-```text
-Observed mortality outcomes (Y)
-                ↓
-      Bernoulli distribution
-                ↓
-          Likelihood
-                ↓
-      Logistic regression
-                ↓
-     Spatial Gaussian field
-                ↓
-         Joint likelihood
-                ↓
-       Prior distributions
-                ↓
-     Posterior distribution
-                ↓
-          INLA-SPDE
-                ↓
-       Parameter estimates
-```
+Observed koala deaths
+          ↓
+Bernoulli probability model
+          ↓
+Bernoulli likelihood
+          ↓
+Add explanatory variables
+          ↓
+Logistic regression model
+          ↓
+Add spatial Gaussian process
+          ↓
+Joint likelihood
+          ↓
+Add priors
+          ↓
+Posterior distribution
+          ↓
+INLA-SPDE computation
+          ↓
+Odds ratios, credible intervals,
+spatial risk maps and predictions
