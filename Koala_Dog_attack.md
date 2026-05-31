@@ -1,3 +1,159 @@
+
+# Statistical Analysis
+
+## Observation Model
+
+For each koala mortality record i:
+
+Yi = 1 if death was due to the target cause
+
+Yi = 0 otherwise
+
+Assume:
+
+Yi ~ Bernoulli(pi_i)
+
+where:
+
+pi_i = P(Yi = 1)
+
+--------------------------------------------------
+
+## Linear Predictor
+
+eta_i = beta_0
+      + beta_1*x_1i
+      + beta_2*x_2i
+      + ...
+      + beta_p*x_pi
+      + W(s_i)
+
+where:
+
+beta_0 = intercept
+
+beta_j = regression coefficients
+
+x_ij = explanatory variables
+
+W(s_i) = spatial random effect
+
+--------------------------------------------------
+
+## Link Function
+
+logit(pi_i)
+
+= log[ pi_i / (1 - pi_i) ]
+
+= eta_i
+
+Equivalent form:
+
+pi_i = exp(eta_i) / (1 + exp(eta_i))
+
+--------------------------------------------------
+
+## Bernoulli Likelihood
+
+L(beta,W)
+
+= Product over i
+
+[pi_i^(y_i)] * [(1-pi_i)^(1-y_i)]
+
+--------------------------------------------------
+
+## Spatial Process
+
+W(s)
+
+~ Gaussian Process(0, C(theta))
+
+where:
+
+C(theta) = spatial covariance function
+
+theta = spatial parameters
+
+--------------------------------------------------
+
+## Joint Likelihood
+
+p(Y,W | beta, theta)
+
+= p(Y | W, beta)
+
+× p(W | theta)
+
+--------------------------------------------------
+
+## Prior Distributions
+
+beta ~ p(beta)
+
+theta ~ p(theta)
+
+--------------------------------------------------
+
+## Posterior Distribution
+
+p(beta,W,theta | Y)
+
+proportional to
+
+p(Y | W,beta)
+
+× p(W | theta)
+
+× p(beta)
+
+× p(theta)
+
+--------------------------------------------------
+
+## Computational Inference
+
+Posterior inference performed using:
+
+- INLA
+- SPDE
+
+--------------------------------------------------
+
+MODEL HIERARCHY
+
+Observed Data (Y)
+        |
+        v
+ Bernoulli Model
+        |
+        v
+    Likelihood
+        |
+        v
+ Logistic Model
+        |
+        v
+ Spatial Random Effect
+        |
+        v
+ Joint Likelihood
+        |
+        v
+      Priors
+        |
+        v
+    Posterior
+        |
+        v
+    INLA-SPDE
+        |
+        v
+ Parameter Estimates
+
+
+
 # Statistical Analysis
 
 ## 1. Observation Model
